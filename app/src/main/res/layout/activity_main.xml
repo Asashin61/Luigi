@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp"
+    tools:context=".MainActivity">
+
+    <!-- Titre de l'application -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bienvenue dans l'application"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Bouton pour afficher la liste des DVDs -->
+    <Button
+        android:id="@+id/button_afficher_dvds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Voir la liste des DVDs"
+        android:textColor="@android:color/white"
+        android:padding="12dp"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Bouton pour se déconnecter -->
+    <Button
+        android:id="@+id/button_logout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Se déconnecter"
+        android:textColor="@android:color/white"
+        android:padding="12dp" />
+
+</LinearLayout>
