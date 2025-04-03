@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,10 +24,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    private EditText editTextEmail, editTextPassword;
+    private EditText editTextEmail, editTextPassword, editTextURL;
     private Button buttonLogin;
+    private Spinner spinnerURLs;
     private OkHttpClient client = new OkHttpClient();
 
     @Override
@@ -35,19 +39,34 @@ public class LoginActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.editTextUsername);
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonLogin = findViewById(R.id.buttonLogin);
+        spinnerURLs = findViewById(R.id.spinnerURLs);
+        editTextURL = findViewById(R.id.editTextURL);
+
+        String[] listeURLs = getResources().getStringArray(R.array.listeURLs);
+        ArrayAdapter<CharSequence> adapterListeURLs = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listeURLs);
+        adapterListeURLs.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerURLs.setAdapter(adapterListeURLs);
+        spinnerURLs.setOnItemSelectedListener(this);
 
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email = editTextEmail.getText().toString();
                 String password = editTextPassword.getText().toString();
-                fetchCustomerByEmail(email, password);
+
+                // Récupérer l'URL depuis l'EditText (si non vide) ou le Spinner
+                String urlConnexion = DonneesPartagees.getURLConnexion();
+                if (!editTextURL.getText().toString().isEmpty()) {
+                    urlConnexion = editTextURL.getText().toString();
+                }
+
+                fetchCustomerByEmail(email, password, urlConnexion);
             }
         });
     }
 
-    private void fetchCustomerByEmail(String email, String password) {
-        String url = "http://10.0.2.2:8080/toad/customer/getByEmail?email=" + email;
+    private void fetchCustomerByEmail(String email, String password, String urlConnexion) {
+        String url = urlConnexion + "/toad/customer/getByEmail?email=" + email;
 
         Request request = new Request.Builder()
                 .url(url)
@@ -108,5 +127,22 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // Gestion du Spinner
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String selectedURL = parent.getItemAtPosition(position).toString();
+        DonneesPartagees.setURLConnexion(selectedURL);
+
+        // Mettre à jour l'EditText avec l'URL sélectionnée dans le Spinner
+        editTextURL.setText(selectedURL);
+
+        Toast.makeText(getApplicationContext(), "URL sélectionnée : " + selectedURL, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Ne rien faire
     }
 }

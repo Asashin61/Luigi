@@ -118,7 +118,7 @@ public class PanierActivity extends AppCompatActivity {
     }
 
     private void getInventoryId(RequestQueue queue, String filmId, final InventoryCallback callback) {
-        String url = "http://10.0.2.2:8080/toad/inventory/available/getById?id=" + filmId;
+        String url = DonneesPartagees.getURLConnexion() + "/toad/inventory/available/getById?id=" + filmId;
 
         Log.d("API_CALL", "Requête envoyée: " + url);
 
@@ -142,7 +142,7 @@ public class PanierActivity extends AppCompatActivity {
     }
 
     private void sendRentalRequest(RequestQueue queue, int inventoryId, String currentDateTime, String returnDate) {
-        String url = "http://10.0.2.2:8080/toad/rental/add";
+        String url = DonneesPartagees.getURLConnexion() + "/toad/rental/add";
 
         StringRequest request = new StringRequest(
                 Request.Method.POST, url,

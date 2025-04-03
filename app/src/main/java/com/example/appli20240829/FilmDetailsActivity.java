@@ -59,7 +59,7 @@ public class FilmDetailsActivity extends AppCompatActivity {
     }
 
     private void fetchFilmDetails(int filmId) {
-        String url = "http://10.0.2.2:8080/toad/film/getById?id=" + filmId;
+        String url = DonneesPartagees.getURLConnexion() + "/toad/film/getById?id=" + filmId;
         Log.d(TAG, "URL de récupération du film: " + url);
 
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -83,7 +83,7 @@ public class FilmDetailsActivity extends AppCompatActivity {
     }
 
     private void checkFilmAvailability(int filmId) {
-        String url = "http://10.0.2.2:8080/toad/inventory/available/getById?id=" + filmId;
+        String url = DonneesPartagees.getURLConnexion() + "/toad/inventory/available/getById?id=" + filmId;
         Log.d(TAG, "URL de vérification disponibilité: " + url);
 
         RequestQueue queue = Volley.newRequestQueue(this);
