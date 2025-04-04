@@ -1,5 +1,6 @@
 package com.example.appli20240829;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,6 +36,8 @@ public class PanierActivity extends AppCompatActivity {
     private Button btnConfirmerPanier;
     private int customerId;
 
+    private Button btnRetourListe;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,12 +54,20 @@ public class PanierActivity extends AppCompatActivity {
         initUI();
         setupListView();
         setupConfirmButton();
+        btnRetourListe.setOnClickListener(v -> {
+            Intent intent = new Intent(PanierActivity.this, AfficherListeDvdsActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
     }
 
     private void initUI() {
         listViewPanier = findViewById(R.id.listViewPanier);
         btnConfirmerPanier = findViewById(R.id.btnConfirmerPanier);
+        btnRetourListe = findViewById(R.id.btnRetourListe);
     }
+
 
     private void setupListView() {
         adapter = new SimpleAdapter(
