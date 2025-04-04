@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 public class FilmDetailsActivity extends AppCompatActivity {
 
-    private static final String TAG = "FilmDetailsActivity"; // Logger Tag
+    private static final String TAG = "FilmDetailsActivity";
 
     private TextView movieTitle, movieDescription, movieReleaseYear, movieLength, movieRating, movieSpecialFeatures;
     private Button btnAjouterPanier;
@@ -74,6 +74,7 @@ public class FilmDetailsActivity extends AppCompatActivity {
     }
 
     private void updateFilmDetailsUI(JSONObject response) {
+        Log.d(TAG, "Mise à jour de l'UI avec les détails du film.");
         movieTitle.setText("Titre : " + response.optString("title", "N/A"));
         movieDescription.setText("Description : " + response.optString("description", "N/A"));
         movieReleaseYear.setText("Année de sortie : " + response.optInt("releaseYear", 0));
@@ -87,66 +88,34 @@ public class FilmDetailsActivity extends AppCompatActivity {
         Log.d(TAG, "URL de vérification disponibilité: " + url);
 
         RequestQueue queue = Volley.newRequestQueue(this);
-
         StringRequest request = new StringRequest(Request.Method.GET, url,
                 response -> {
-                    Log.d(TAG, "Réponse brute de l'API: " + response);  // Afficher la réponse brute du serveur
-
-                    // Vérifier si la réponse n'est pas vide
+                    Log.d(TAG, "Réponse brute de l'API: " + response);
                     if (response == null || response.trim().isEmpty()) {
                         Log.e(TAG, "Réponse vide ou invalide du serveur.");
                         disableAddToCartButton();
                         return;
                     }
-
                     try {
-                        // Vérifier si la réponse est un nombre valide
                         int inventoryId = Integer.parseInt(response.trim());
+                        Log.d(TAG, "Inventory ID reçu: " + inventoryId);
                         if (inventoryId > 0) {
                             enableAddToCartButton();
                         } else {
                             disableAddToCartButton();
                         }
                     } catch (NumberFormatException e) {
-                        // Si la réponse n'est pas un entier valide, loguer l'erreur
                         Log.e(TAG, "Erreur lors de la conversion de la réponse en entier: " + e.getMessage());
                         disableAddToCartButton();
                     }
                 },
-                error -> {
-                    // Log l'erreur Volley
-                    Log.e(TAG, "Erreur de réseau: " + error.getMessage());
-                    handleVolleyError(error, "Erreur de connexion lors de la vérification de la disponibilité");
-                });
+                error -> handleVolleyError(error, "Erreur de connexion lors de la vérification de la disponibilité"));
 
         queue.add(request);
     }
 
-
-
-
-    private void handleAvailabilityResponse(JSONObject response) {
-        try {
-            if (response.has("inventoryId")) {
-                int inventoryId = response.getInt("inventoryId");
-                Log.d(TAG, "Inventory ID reçu: " + inventoryId);
-
-                if (inventoryId > 0) {
-                    enableAddToCartButton();
-                } else {
-                    disableAddToCartButton();
-                }
-            } else {
-                Log.e(TAG, "Clé 'inventoryId' absente dans la réponse JSON.");
-                disableAddToCartButton();
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, "Erreur JSON lors de la lecture de 'inventoryId': " + e.getMessage());
-            disableAddToCartButton();
-        }
-    }
-
     private void enableAddToCartButton() {
+        Log.d(TAG, "Le film est disponible, activation du bouton.");
         btnAjouterPanier.setEnabled(true);
         btnAjouterPanier.setAlpha(1.0f);
         btnAjouterPanier.setText("Ajouter au panier");
@@ -154,6 +123,7 @@ public class FilmDetailsActivity extends AppCompatActivity {
     }
 
     private void disableAddToCartButton() {
+        Log.d(TAG, "Le film n'est pas disponible, désactivation du bouton.");
         btnAjouterPanier.setEnabled(false);
         btnAjouterPanier.setAlpha(0.5f);
         btnAjouterPanier.setText("Dvd non disponible");
@@ -162,7 +132,7 @@ public class FilmDetailsActivity extends AppCompatActivity {
     private void ajouterFilmAuPanier() {
         String title = movieTitle.getText().toString().replace("Titre :", "").trim();
         String releaseYear = movieReleaseYear.getText().toString().replace("Année de sortie :", "").trim();
-        int filmId = getIntent().getIntExtra("filmId", -1); // Récupération de l'ID du film
+        int filmId = getIntent().getIntExtra("filmId", -1);
 
         if (filmId == -1) {
             Log.e(TAG, "ID du film invalide, impossible d'ajouter au panier.");
@@ -175,17 +145,8 @@ public class FilmDetailsActivity extends AppCompatActivity {
         startActivity(new Intent(FilmDetailsActivity.this, PanierActivity.class));
     }
 
-
     private void handleVolleyError(VolleyError error, String message) {
         Log.e(TAG, message, error);
-
-        if (error.networkResponse != null) {
-            Log.e(TAG, "Code HTTP: " + error.networkResponse.statusCode);
-            Log.e(TAG, "Réponse serveur: " + new String(error.networkResponse.data));
-        } else {
-            Log.e(TAG, "Aucune réponse du serveur.");
-        }
-
         showToast("Erreur de connexion");
         disableAddToCartButton();
     }

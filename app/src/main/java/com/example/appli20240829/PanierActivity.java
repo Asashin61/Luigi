@@ -8,6 +8,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
@@ -89,11 +90,19 @@ public class PanierActivity extends AppCompatActivity {
 
     private void supprimerFilmDuPanier(int position) {
         if (position >= 0 && position < panierList.size()) {
-            panierList.remove(position);
-            adapter.notifyDataSetChanged();
-            Toast.makeText(this, "Film supprimé du panier", Toast.LENGTH_SHORT).show();
+            new AlertDialog.Builder(this)
+                    .setTitle("Confirmation")
+                    .setMessage("Voulez-vous vraiment supprimer ce DVD du panier ?")
+                    .setPositiveButton("Oui", (dialog, which) -> {
+                        panierList.remove(position);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(this, "Film supprimé du panier", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Non", null)
+                    .show();
         }
     }
+
 
     private void enregistrerLocations() {
         if (customerId == -1) {

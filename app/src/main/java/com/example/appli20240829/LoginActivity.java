@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     }
 
     private void fetchCustomerByEmail(String email, String password, String urlConnexion) {
-        String url = urlConnexion + "/toad/customer/getByEmail?email=" + email;
+        String url = DonneesPartagees.getURLConnexion() + "/toad/customer/getByEmail?email=" + email;
 
         Request request = new Request.Builder()
                 .url(url)
