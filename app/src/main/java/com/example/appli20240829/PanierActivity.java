@@ -17,9 +17,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,9 +31,8 @@ public class PanierActivity extends AppCompatActivity {
     private SimpleAdapter adapter;
     private ListView listViewPanier;
     private Button btnConfirmerPanier;
-    private int customerId;
-
     private Button btnRetourListe;
+    private int customerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +42,6 @@ public class PanierActivity extends AppCompatActivity {
         // Récupérer le customerId de SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         customerId = sharedPreferences.getInt("customerId", -1);
-
         if (customerId == -1) {
             Toast.makeText(this, "Erreur : ID client non trouvé", Toast.LENGTH_SHORT).show();
         }
@@ -54,20 +49,18 @@ public class PanierActivity extends AppCompatActivity {
         initUI();
         setupListView();
         setupConfirmButton();
+
         btnRetourListe.setOnClickListener(v -> {
-            Intent intent = new Intent(PanierActivity.this, AfficherListeDvdsActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(PanierActivity.this, AfficherListeDvdsActivity.class));
             finish();
         });
-
     }
 
     private void initUI() {
-        listViewPanier = findViewById(R.id.listViewPanier);
-        btnConfirmerPanier = findViewById(R.id.btnConfirmerPanier);
-        btnRetourListe = findViewById(R.id.btnRetourListe);
+        listViewPanier      = findViewById(R.id.listViewPanier);
+        btnConfirmerPanier  = findViewById(R.id.btnConfirmerPanier);
+        btnRetourListe      = findViewById(R.id.btnRetourListe);
     }
-
 
     private void setupListView() {
         adapter = new SimpleAdapter(
@@ -91,11 +84,13 @@ public class PanierActivity extends AppCompatActivity {
         });
     }
 
-    public static void ajouterFilmAuPanier(String title, String releaseYear, String filmId) {
+    /** On reçoit maintenant aussi inventoryId **/
+    public static void ajouterFilmAuPanier(String title, String releaseYear, String filmId, String inventoryId) {
         HashMap<String, String> film = new HashMap<>();
         film.put("title", title);
         film.put("releaseYear", releaseYear);
         film.put("filmId", filmId);
+        film.put("inventoryId", inventoryId);
         panierList.add(film);
     }
 
@@ -114,51 +109,20 @@ public class PanierActivity extends AppCompatActivity {
         }
     }
 
-
     private void enregistrerLocations() {
         if (customerId == -1) {
             Toast.makeText(this, "Erreur : ID client non trouvé", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String currentDateTime = getCurrentDateTime();
-        String returnDate = getReturnDate();
+        RequestQueue queue         = Volley.newRequestQueue(this);
+        String currentDateTime     = getCurrentDateTime();
+        String returnDate          = getReturnDate();
 
         for (HashMap<String, String> film : panierList) {
-            String filmId = film.get("filmId");
-            getInventoryId(queue, filmId, (inventoryId) -> {
-                if (inventoryId != null) {
-                    sendRentalRequest(queue, inventoryId, currentDateTime, returnDate);
-                } else {
-                    Toast.makeText(this, "Stock non disponible pour " + film.get("title"), Toast.LENGTH_SHORT).show();
-                }
-            });
+            int inventoryId = Integer.parseInt(film.get("inventoryId"));
+            sendRentalRequest(queue, inventoryId, currentDateTime, returnDate);
         }
-    }
-
-    private void getInventoryId(RequestQueue queue, String filmId, final InventoryCallback callback) {
-        String url = DonneesPartagees.getURLConnexion() + "/toad/inventory/available/getById?id=" + filmId;
-
-        Log.d("API_CALL", "Requête envoyée: " + url);
-
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    Log.d("API_RESPONSE", "Réponse de getInventoryId: " + response);
-                    try {
-                        int inventoryId = Integer.parseInt(response.trim());
-                        callback.onSuccess(inventoryId);
-                    } catch (NumberFormatException e) {
-                        Log.e("API_ERROR", "Erreur conversion int: " + e.getMessage());
-                        callback.onSuccess(null);
-                    }
-                },
-                error -> {
-                    Log.e("API_ERROR", "Erreur de requête: " + error.getMessage());
-                    callback.onSuccess(null);
-                });
-
-        queue.add(request);
     }
 
     private void sendRentalRequest(RequestQueue queue, int inventoryId, String currentDateTime, String returnDate) {
@@ -171,18 +135,17 @@ public class PanierActivity extends AppCompatActivity {
                     panierList.clear();
                     adapter.notifyDataSetChanged();
                 },
-                error -> {
-                    Toast.makeText(this, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show();
-                }) {
+                error -> Toast.makeText(this, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show()
+        ) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("rental_date", currentDateTime);
-                params.put("inventory_id", String.valueOf(inventoryId));
-                params.put("customer_id", String.valueOf(customerId));
-                params.put("return_date", returnDate);
-                params.put("staff_id", "1");
-                params.put("last_update", currentDateTime);
+                params.put("rental_date",   currentDateTime);
+                params.put("inventory_id",  String.valueOf(inventoryId));
+                params.put("customer_id",   String.valueOf(customerId));
+                params.put("return_date",   returnDate);
+                params.put("staff_id",      "1");
+                params.put("last_update",   currentDateTime);
                 return params;
             }
         };
@@ -191,19 +154,14 @@ public class PanierActivity extends AppCompatActivity {
     }
 
     private String getCurrentDateTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        return sdf.format(new Date());
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date());
     }
 
     private String getReturnDate() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
         calendar.add(Calendar.DAY_OF_YEAR, 2);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        return sdf.format(calendar.getTime());
-    }
-
-    interface InventoryCallback {
-        void onSuccess(Integer inventoryId);
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(calendar.getTime());
     }
 }

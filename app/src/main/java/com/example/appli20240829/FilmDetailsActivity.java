@@ -3,7 +3,6 @@ package com.example.appli20240829;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,7 +17,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class FilmDetailsActivity extends AppCompatActivity {
@@ -74,7 +72,6 @@ public class FilmDetailsActivity extends AppCompatActivity {
     }
 
     private void updateFilmDetailsUI(JSONObject response) {
-        Log.d(TAG, "Mise à jour de l'UI avec les détails du film.");
         movieTitle.setText("Titre : " + response.optString("title", "N/A"));
         movieDescription.setText("Description : " + response.optString("description", "N/A"));
         movieReleaseYear.setText("Année de sortie : " + response.optInt("releaseYear", 0));
@@ -92,15 +89,13 @@ public class FilmDetailsActivity extends AppCompatActivity {
                 response -> {
                     Log.d(TAG, "Réponse brute de l'API: " + response);
                     if (response == null || response.trim().isEmpty()) {
-                        Log.e(TAG, "Réponse vide ou invalide du serveur.");
                         disableAddToCartButton();
                         return;
                     }
                     try {
                         int inventoryId = Integer.parseInt(response.trim());
-                        Log.d(TAG, "Inventory ID reçu: " + inventoryId);
                         if (inventoryId > 0) {
-                            enableAddToCartButton();
+                            enableAddToCartButton(inventoryId);
                         } else {
                             disableAddToCartButton();
                         }
@@ -114,22 +109,24 @@ public class FilmDetailsActivity extends AppCompatActivity {
         queue.add(request);
     }
 
-    private void enableAddToCartButton() {
+    /** Maintenant on prend l’inventoryId en paramètre **/
+    private void enableAddToCartButton(int inventoryId) {
         Log.d(TAG, "Le film est disponible, activation du bouton.");
         btnAjouterPanier.setEnabled(true);
         btnAjouterPanier.setAlpha(1.0f);
         btnAjouterPanier.setText("Ajouter au panier");
-        btnAjouterPanier.setOnClickListener(v -> ajouterFilmAuPanier());
+        btnAjouterPanier.setOnClickListener(v -> ajouterFilmAuPanier(inventoryId));
     }
 
     private void disableAddToCartButton() {
         Log.d(TAG, "Le film n'est pas disponible, désactivation du bouton.");
         btnAjouterPanier.setEnabled(false);
         btnAjouterPanier.setAlpha(0.5f);
-        btnAjouterPanier.setText("Dvd non disponible");
+        btnAjouterPanier.setText("DVD non disponible");
     }
 
-    private void ajouterFilmAuPanier() {
+    /** On ajoute maintenant aussi inventoryId **/
+    private void ajouterFilmAuPanier(int inventoryId) {
         String title = movieTitle.getText().toString().replace("Titre :", "").trim();
         String releaseYear = movieReleaseYear.getText().toString().replace("Année de sortie :", "").trim();
         int filmId = getIntent().getIntExtra("filmId", -1);
@@ -140,8 +137,8 @@ public class FilmDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d(TAG, "Ajout au panier: " + title + " (" + releaseYear + "), Film ID: " + filmId);
-        PanierActivity.ajouterFilmAuPanier(title, releaseYear, String.valueOf(filmId));
+        Log.d(TAG, "Ajout au panier: " + title + " (" + releaseYear + "), Film ID: " + filmId + ", Inventory ID: " + inventoryId);
+        PanierActivity.ajouterFilmAuPanier(title, releaseYear, String.valueOf(filmId), String.valueOf(inventoryId));
         startActivity(new Intent(FilmDetailsActivity.this, PanierActivity.class));
     }
 
