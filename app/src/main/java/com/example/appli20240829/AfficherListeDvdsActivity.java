@@ -25,12 +25,11 @@ import java.net.URL;
 
 public class AfficherListeDvdsActivity extends AppCompatActivity {
 
-    private static final String API_URL = "http://10.0.2.2:8080/toad/film/all";
 
     private SimpleCursorAdapter adapter;
     private MatrixCursor dvdCursor;
     private ListView listViewDvds;
-    private ProgressDialog progressDialog;  // Ajout du dialogue de chargement
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +39,10 @@ public class AfficherListeDvdsActivity extends AppCompatActivity {
         // Initialisation des vues
         setupUI();
 
-        // Récupération des films depuis l'API
-        new FetchFilmListTask().execute(API_URL);
+        String apiUrl = DonneesPartagees.getURLConnexion() + "/toad/film/all";
+        new FetchFilmListTask().execute(apiUrl);
     }
+
 
     /**
      * Initialise l'interface utilisateur.
