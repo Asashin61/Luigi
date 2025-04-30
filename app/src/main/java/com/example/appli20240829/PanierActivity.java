@@ -146,7 +146,7 @@ public class PanierActivity extends AppCompatActivity {
                 response -> {
                     Log.d("API_RESPONSE", "Réponse de getInventoryId: " + response);
                     try {
-                        int inventoryId = Integer.parseInt(response.trim()); // Conversion directe
+                        int inventoryId = Integer.parseInt(response.trim());
                         callback.onSuccess(inventoryId);
                     } catch (NumberFormatException e) {
                         Log.e("API_ERROR", "Erreur conversion int: " + e.getMessage());

@@ -74,7 +74,7 @@ public class AfficherListeDvdsActivity extends AppCompatActivity {
         listViewDvds.setAdapter(adapter);
         listViewDvds.setTextFilterEnabled(true);
 
-        listViewDvds.setOnItemClickListener((parent, view, position, id) -> openFilmDetails(position));
+        listViewDvds.setOnItemClickListener((paFrent, view, position, id) -> openFilmDetails(position));
     }
 
     /**
